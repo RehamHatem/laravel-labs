@@ -4,6 +4,11 @@
 
 @section('content')
 <div class="container mx-auto mt-2">
+    @if (session('success'))
+        <div class="mb-4 px-4 py-2 rounded-lg bg-green-100 text-green-800 border border-green-300">
+            {{ session('success') }}
+        </div>
+    @endif
     <div class="flex justify-center items-center ">
     <a href="{{ route('posts.create') }}" 
        class="bg-green-500 hover:bg-green-600 text-white font-bold py-2 px-4 rounded">
