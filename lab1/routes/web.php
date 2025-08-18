@@ -1,5 +1,6 @@
 <?php
 
+use App\Http\Controllers\CommentController;
 use App\Http\Controllers\PostController;
 use App\Http\Controllers\UserController;
 use Illuminate\Support\Facades\Route;
@@ -45,16 +46,47 @@ Route::fallback(function () {
 
 
 // Routes with controller
+// Route::get('/posts', [PostController::class, 'index'])->name('posts.index');
+// Route::get('/posts/{post:slug}', [PostController::class, 'show'])->name('posts.show');
+// Route::get('/posts/create', [PostController::class, 'create'])->name('posts.create');
+
+
+// Route::get('/posts/trash', [PostController::class, 'trashed'])->name('posts.trash');
+// Route::delete('/posts/{id}/force-delete', [PostController::class, 'forceDelete'])->name('posts.forceDelete');
+// Route::get('/posts/{post:slug}/edit', [PostController::class, 'edit'])->name('posts.edit');
+
+// // Route::get('/posts/{id}', [PostController::class, 'show'])->name('posts.show');
+// Route::get('/posts/{id}/restore', [PostController::class, 'restore'])->name('posts.restore');
+// Route::post('/posts', [PostController::class, 'store'])->name('posts.store');
+// // Route::get('/posts/{id}/edit', [PostController::class, 'edit'])->name('posts.edit');
+
+// Route::put('/posts/{id}', [PostController::class, 'update'])->name('posts.update');
+// Route::delete('/posts/{id}', [PostController::class, 'destroy'])->name('posts.destroy');
+
+// // Route::resource('posts', PostController::class);
+
+// Route::resource('users', UserController::class);
+// Route::post('/posts/{id}/comment', [CommentController::class, 'store'])->name('comments.store');
+
+Route::resource('users', UserController::class);
+
+// Post Routes
+// ----------------------
 Route::get('/posts', [PostController::class, 'index'])->name('posts.index');
-
 Route::get('/posts/create', [PostController::class, 'create'])->name('posts.create');
-Route::get('/posts/{id}', [PostController::class, 'show'])->name('posts.show');
-
 Route::post('/posts', [PostController::class, 'store'])->name('posts.store');
-Route::get('/posts/{id}/edit', [PostController::class, 'edit'])->name('posts.edit');
+
+Route::get('/posts/{post:slug}', [PostController::class, 'show'])->name('posts.show');
+Route::get('/posts/{post:slug}/edit', [PostController::class, 'edit'])->name('posts.edit');
 Route::put('/posts/{id}', [PostController::class, 'update'])->name('posts.update');
 Route::delete('/posts/{id}', [PostController::class, 'destroy'])->name('posts.destroy');
 
-// Route::resource('posts', PostController::class);
+// Extra Post Routes
+Route::get('/posts/trash', [PostController::class, 'trashed'])->name('posts.trash');
+Route::get('/posts/{id}/restore', [PostController::class, 'restore'])->name('posts.restore');
+Route::delete('/posts/{id}/force-delete', [PostController::class, 'forceDelete'])->name('posts.forceDelete');
 
-Route::resource('users', UserController::class);
+// ----------------------
+// Comment Routes
+// ----------------------
+Route::post('/posts/{post:slug}/comment', [CommentController::class, 'store'])->name('comments.store');
