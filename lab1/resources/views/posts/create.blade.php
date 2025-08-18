@@ -22,12 +22,11 @@
 
         <div>
             <label for="creator" class="block text-gray-700 font-medium mb-1">Post Creator</label>
-            <select id="creator" name="creator"
-                    class="w-full border border-gray-300 rounded px-3 py-2 focus:outline-none focus:ring focus:ring-blue-200">
-                <option>Ahmed</option>
-                <option>Ali</option>
-                <option>Omar</option>
-            </select>
+            <select name="post_creator" class="form-control">
+            @foreach($creators as $creator)
+                <option value="{{ $creator->id }}">{{ $creator->name }}</option>
+            @endforeach
+        </select>
         </div>
         <div>
             <button type="submit"

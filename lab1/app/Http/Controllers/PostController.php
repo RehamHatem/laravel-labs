@@ -3,123 +3,129 @@
 namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\DB;
+use App\Models\Post;
+use App\Models\User;
 
 class PostController extends Controller
 {
-    private $posts = [];
-
-    public function __construct()
-    {
-       $this->posts = [
-    [
-        'id'          => 1,
-        'title'       => 'Getting Started with Laravel 12',
-        'description' => 'An introductory guide to installing Laravel 12, setting up your environment, and creating your first project.',
-        'posted_by'   => 'Ahmed',
-        'created_at'  => '2025-08-01',
-        'actions'     => 'view, edit, delete'
-    ],
-    [
-        'id'          => 2,
-        'title'       => 'Understanding MVC Architecture',
-        'description' => 'A deep dive into the Model-View-Controller pattern, its benefits, and how Laravel implements it.',
-        'posted_by'   => 'Ali',
-        'created_at'  => '2025-08-03',
-        'actions'     => 'view, edit, delete'
-    ],
-    [
-        'id'          => 3,
-        'title'       => 'Building Your First Blade Template',
-        'description' => 'Learn how to create dynamic and reusable Blade templates for your Laravel application.',
-        'posted_by'   => 'Ahmed',
-        'created_at'  => '2025-08-05',
-        'actions'     => 'view, edit, delete'
-    ],
-    [
-        'id'          => 4,
-        'title'       => 'Introduction to Eloquent ORM',
-        'description' => 'An overview of Laravel’s Eloquent ORM and how to use it to interact with your database efficiently.',
-        'posted_by'   => 'Omar',
-        'created_at'  => '2025-08-07',
-        'actions'     => 'view, edit, delete'
-    ],
-    [
-        'id'          => 5,
-        'title'       => 'Handling Forms and Validation',
-        'description' => 'A complete guide to handling form submissions in Laravel and validating user input.',
-        'posted_by'   => 'Ali',
-        'created_at'  => '2025-08-10',
-        'actions'     => 'view, edit, delete'
-    ],
-];
-
-    }
-
+    /**
+     * Display a listing of the resource.
+     */
     public function index()
     {
-        return view('posts.index', ['posts' => $this->posts]);
+        //DB facade
+        // $posts = DB::table('posts')->get();
+
+        //Eloquant
+$posts = Post::with('user')->simplePaginate(5);
+        return view('posts.index', compact('posts'));
     }
 
+    /**
+     * Show the form for creating a new resource.
+     */
     public function create()
     {
-        return view('posts.create', ['title' => 'Create Post']);
+        $creators = User::all(); 
+        return view('posts.create', compact('creators'));
     }
 
+    /**
+     * Store a newly created resource in storage.
+     */
     public function store(Request $request)
     {
-        $newPost = [
-            'id'         => count($this->posts) + 1,
-            'title'      => $request->input('title'),
-            'posted_by'  => $request->input('creator'),
-            'created_at' => now()->toDateString(),
-            'actions'    => 'view, edit, delete'
-        ];
+        
+        // DB::table('posts')->insert(
+        //     [
+        //     'title' => $request->title,
+        //     'description' => $request->description,
+        //     'created_at' => '2025-08-01',
+        //     'posted_by' => $request->post_creator
+        //     ]
+        //     );
 
-        $this->posts[] = $newPost;
+        //Eloquant
+        // $post = new Post();
+        // $post->title = $request->title;
+        //  $post->description = $request->description;
+        //  $post->posted_by = $request->post_creator;
+        //  $post->save();
 
-        return redirect()->route('posts.index')
-            ->with('success', 'Post created successfully!');
+        //mass assignment
+        Post::create([
+            'title' => $request->title,
+            'description' => $request->description,
+            'user_id' => $request->post_creator
+        ]);
+    
+        return redirect()->route('posts.index')->with('success', 'Post Created!');
     }
 
+    /**
+     * Display the specified resource.
+     */
     public function show(string $id)
     {
-        foreach ($this->posts as $post) {
-            if ($post['id'] == $id) {
-                return view('posts.show', compact('post'));
-            }
-        }
-        return "Post not found.";
+        //DB facade
+        // $post = Db::table('posts')->where('id', $id)->firstOrFail();
+
+        //Eloquant
+        $post = Post::findOrFail($id);
+        // if(!$post) {
+        //     return "Post not found";
+        // }
+            return view('posts.show', compact('post'));
+        
     }
 
+    /**
+     * Show the form for editing the specified resource.
+     */
     public function edit(string $id)
     {
-        foreach ($this->posts as $post) {
-            if ($post['id'] == $id) {
-                return view('posts.edit', compact('post'));
-            }
-        }
-        return 'Post not found.';
+      $post = Post::findOrFail($id);
+     $creators = User::all();
+      return view('posts.edit', compact('post', 'creators'));
+   
+       
     }
 
+    /**
+     * Update the specified resource in storage.
+     */
     public function update(Request $request, string $id)
     {
-        foreach ($this->posts as &$post) {
-            if ($post['id'] == $id) {
-                $post['title'] = $request->input('title');
-                break;
-            }
-        }
-        return redirect()->route('posts.index')
-            ->with('success', 'Post updated successfully!');
+        //DB facade
+        //  $posts = DB::table('posts')->where('id', $id)->update(
+        //     [
+        //         'title' => $request->title,
+        //         'description' => $request->description,
+        //         'posted_by' => $request->post_creator
+        //     ]
+        //  );
+
+         //eloquant
+         $post = Post::findOrFail($id);
+         $post->title = $request->title;
+         $post->description = $request->description;
+         $post->user_id = $request->post_creator;
+         $post->save();
+                     
+        return redirect()->route('posts.index')->with('success', 'Post Updated!');
+        // return $request;
     }
 
+    /**
+     * Remove the specified resource from storage.
+     */
     public function destroy(string $id)
     {
-        $this->posts = array_filter($this->posts, function ($post) use ($id) {
-            return $post['id'] != $id;
-        });
+        // DB::table('posts')->where('id', $id)->delete();
 
-        return redirect()->route('posts.index')
-            ->with('success', 'Post deleted successfully!');
+        Post::findOrFail($id)->delete();
+
+        return redirect()->route('posts.index')->with('success', 'Post Deleted');
     }
 }
