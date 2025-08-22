@@ -1,17 +1,32 @@
-@extends('layouts.app')
-
-@section('title', 'Post Details')
-
-@section('content')
+<x-app-layout>
+<x-slot name="header">
+        <h2 class="font-semibold text-xl text-gray-800 dark:text-gray-200 leading-tight">
+            {{ __('View Post') }}
+        </h2>
+    </x-slot>
 <div class="container mx-auto mt-6">
-    <div class="bg-gray-100 border rounded-lg p-6 mb-6 shadow">
-        <h2 class="text-lg font-semibold mb-4">Post Info</h2>
+<div class="bg-gray-100 border rounded-lg p-6 mb-6 shadow flex justify-between items-start gap-6">
+        <div>
+            <h2 class="text-lg font-semibold mb-4">Post Info</h2>
         <p class="mb-2">
             <strong>Title :-</strong> {{ $post->title }}
         </p>
         <p class="mb-2">
             <strong>Description :-</strong> {{ $post->description }}
         </p>
+        </div>
+        
+
+         @if($post->image)
+        <div class="mt-4">
+            <strong>Image :-</strong><br>
+            <img src="{{ asset( $post->image) }}" 
+                 alt="Post Image" 
+                 class="max-w-xs w-32 h-32 object-fill rounded shadow">
+        </div>
+    @else
+        <p class="text-gray-500 mt-4">No image uploaded.</p>
+    @endif
     </div>
     <div class="bg-gray-100 border rounded-lg p-6 shadow">
         <h2 class="text-lg font-semibold mb-4">Post Creator Info</h2>
@@ -61,4 +76,4 @@
     </div>
 
 </div>
-@endsection
+</x-app-layout>

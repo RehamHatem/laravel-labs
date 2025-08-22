@@ -7,11 +7,13 @@ use Illuminate\Database\Eloquent\Casts\Attribute;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\SoftDeletes;
+use Illuminate\Support\Str;
+
 
 class Post extends Model
 {
     use HasFactory , SoftDeletes;
-    protected $fillable = ['title', 'description', 'user_id', 'slug'];
+    protected $fillable = ['title', 'description', 'user_id', 'slug', 'image'];
     
     function user()
     {
@@ -42,4 +44,15 @@ protected static function boot()
         $post->slug = str($post->title)->slug();
     });
 }
+
+
+ public function getOriginalFilenameAttribute()
+    {
+        if (!$this->image) {
+            return null;
+        }
+        $basename = basename($this->image);
+        return Str::afterLast($basename, '_');
+    }
+
 }

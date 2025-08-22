@@ -1,13 +1,29 @@
 <?php
 
+use App\Http\Controllers\AdminController;
 use App\Http\Controllers\CommentController;
 use App\Http\Controllers\PostController;
+use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\UserController;
 use Illuminate\Support\Facades\Route;
 
 Route::get('/', function () {
     return view('welcome');
 });
+
+Route::get('/dashboard', function () {
+    return view('dashboard');
+})->middleware(['auth', 'verified'])->name('dashboard');
+
+Route::middleware('auth')->group(function () {
+    Route::get('/profile', [ProfileController::class, 'edit'])->name('profile.edit');
+    Route::patch('/profile', [ProfileController::class, 'update'])->name('profile.update');
+    Route::delete('/profile', [ProfileController::class, 'destroy'])->name('profile.destroy');
+});
+
+
+require __DIR__.'/auth.php';
+
 
 Route::get('/test', function (){
     return 'This is a test route!';
@@ -26,14 +42,14 @@ Route::get('users/{name?}' , function ($name = 'Guest') {
 
 
 // Named Routes
-Route::get('profile', function () {
-    return 'This is the user profile page.';
-})->name('user.profile');
+// Route::get('profile', function () {
+//     return 'This is the user profile page.';
+// })->name('user.profile');
 
 
-Route::get('redirect-to-profile', function () {
-    return redirect()->route('user.profile');
-});
+// Route::get('redirect-to-profile', function () {
+//     return redirect()->route('user.profile');
+// });
 
 
 Route::fallback(function () {
@@ -75,6 +91,7 @@ Route::resource('users', UserController::class);
 Route::get('/posts', [PostController::class, 'index'])->name('posts.index');
 Route::get('/posts/create', [PostController::class, 'create'])->name('posts.create');
 Route::post('/posts', [PostController::class, 'store'])->name('posts.store');
+Route::get('/posts/trash', [PostController::class, 'trashed'])->name('posts.trash')->middleware('admin.only');
 
 Route::get('/posts/{post:slug}', [PostController::class, 'show'])->name('posts.show');
 Route::get('/posts/{post:slug}/edit', [PostController::class, 'edit'])->name('posts.edit');
@@ -82,7 +99,6 @@ Route::put('/posts/{id}', [PostController::class, 'update'])->name('posts.update
 Route::delete('/posts/{id}', [PostController::class, 'destroy'])->name('posts.destroy');
 
 // Extra Post Routes
-Route::get('/posts/trash', [PostController::class, 'trashed'])->name('posts.trash');
 Route::get('/posts/{id}/restore', [PostController::class, 'restore'])->name('posts.restore');
 Route::delete('/posts/{id}/force-delete', [PostController::class, 'forceDelete'])->name('posts.forceDelete');
 
@@ -90,3 +106,6 @@ Route::delete('/posts/{id}/force-delete', [PostController::class, 'forceDelete']
 // Comment Routes
 // ----------------------
 Route::post('/posts/{post:slug}/comment', [CommentController::class, 'store'])->name('comments.store');
+
+Route::get('/admin/users', [AdminController::class, 'usersList'])->name('admin.user.index')->middleware('admin.only');
+Route::patch('/admin/users/{user}/change-role', [AdminController::class, 'changeUserRole'])->name('admin.user.changeRole')->middleware('admin.only');

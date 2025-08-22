@@ -10,6 +10,7 @@ use App\Models\Post;
 use App\Models\User;
 use Carbon\Carbon;
 use Illuminate\Database\Eloquent\Casts\Attribute;
+use Illuminate\Support\Facades\Storage;
 
 #use Carbon\Carbon;
 
@@ -73,15 +74,25 @@ $posts = Post::with('user')->simplePaginate(5);
     
         
         //mass assignment
-        Post::create([
-            'title' => $request->title,
-            'description' => $request->description,
-            'user_id' => $request->post_creator
-        ]);
-            LogUserAction::dispatch("Post created with title: {$request->title}");
+        // Post::create([
+        //     'title' => $request->title,
+        //     'description' => $request->description,
+        //     'user_id' => $request->post_creator
+        // ]);
 
-    
-        return redirect()->route('posts.index')->with('success', 'Post Created!');
+ $validated = $request->validated();
+
+    if ($request->hasFile('image')) {
+        $fileName = time() . '_' . $request->file('image')->getClientOriginalName();
+        $request->file('image')->move(public_path('uploads'), $fileName);
+        $validated['image'] = url('uploads/' . $fileName);
+    }
+
+    $validated['user_id'] = $request->post_creator;
+    $post = Post::create($validated);
+
+     LogUserAction::dispatch("Post created with title: {$post->title}");
+    return redirect()->route('posts.index')->with('success', 'Post Created!');
     }
 
     /**
@@ -132,11 +143,40 @@ $posts = Post::with('user')->simplePaginate(5);
         //  );
 
          //eloquant
-         $post = Post::findOrFail($id);
-         $post->title = $request->title;
-         $post->description = $request->description;
-         $post->user_id = $request->post_creator;
-         $post->save();
+        //  $post = Post::findOrFail($id);
+        //  $post->title = $request->title;
+        //  $post->description = $request->description;
+        //  $post->user_id = $request->post_creator;
+        //  $post->save();
+
+
+
+        $post = Post::findOrFail($id);
+
+    $validated = $request->validate([
+        'title' => 'required|string|min:2',
+        'description' => 'required|string|min:5',
+        'post_creator' => 'required|exists:users,id',
+        'image' => 'nullable|image|mimes:jpg,jpeg,png,gif|max:2048'
+    ]);
+
+    if ($request->hasFile('image')) {
+        // Delete old image
+        if ($post->image && file_exists(public_path($post->image))) {
+            unlink(public_path($post->image));
+        }
+
+        $file = $request->file('image');
+        $newName = time().'_'.$file->getClientOriginalName();
+        $file->move(public_path('uploads'), $newName);
+
+        // $validated['image'] = 'uploads/'.$newName;
+        $validated['image'] = url('uploads/' . $newName);
+    }
+
+    $validated['user_id'] = $request->post_creator;
+    $post->update($validated);
+
                      
         return redirect()->route('posts.index')->with('success', 'Post Updated!');
         // return $request;
@@ -149,7 +189,15 @@ $posts = Post::with('user')->simplePaginate(5);
     {
         // DB::table('posts')->where('id', $id)->delete();
 
-        Post::findOrFail($id)->delete();
+        // Post::findOrFail($id)->delete();
+
+        $post = Post::findOrFail($id); 
+
+    if ($post->image && file_exists(public_path($post->image))) {
+        unlink(public_path($post->image));
+    }
+
+    $post->delete();
 
         return redirect()->route('posts.index')->with('success', 'Post Deleted');
     }
@@ -175,8 +223,9 @@ $posts = Post::with('user')->simplePaginate(5);
 public function forceDelete($id)
 {
     $post = Post::onlyTrashed()->findOrFail($id);
+    $post->comments()->delete(); 
+    Storage::disk('public')->delete($post->image);
     $post->forceDelete();
-
     return redirect()->route('posts.trash')->with('success', 'Post permanently deleted!');
 }
 

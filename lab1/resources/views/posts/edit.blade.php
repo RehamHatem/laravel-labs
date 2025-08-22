@@ -1,10 +1,11 @@
-@extends('layouts.app')
-
-@section('title', 'Update Post')
-
-@section('content')
+<x-app-layout>
+<x-slot name="header">
+        <h2 class="font-semibold text-xl text-gray-800 dark:text-gray-200 leading-tight">
+            {{ __('Edit Post') }}
+        </h2>
+    </x-slot>
 <div class="w-full max-w-lg justify-content-center mx-auto mt-10">
-  <form action="{{route('posts.update' , $post->id)}}" method="POST" class="bg-white shadow-md rounded px-8 pt-6 pb-8 mb-4">
+  <form action="{{route('posts.update' , $post->id)}}" method="POST" enctype="multipart/form-data" class="bg-white shadow-md rounded px-8 pt-6 pb-8 mb-4">
   @csrf
   <!-- <input type="hidden" name="_token" value="gdhdjdopdjdpjdvsdl">   -->
   @method('PUT')
@@ -33,6 +34,23 @@
     </div>
     
     <div>
+      <div class="mb-6">
+        <label class="block text-gray-700 text-sm font-bold mb-2">Post Image</label>
+        
+        @if($post->image)
+            <p class="mb-2 text-gray-600">Current: {{ $post->original_filename  }}</p>
+            <img src="{{ asset($post->image) }}" alt="Post Image" class="w-32 h-32 object-cover rounded mb-2">
+        @endif
+        
+        <input type="file" name="image" class="block w-full text-sm text-gray-600">
+        @error('image')
+            <div class="text-red-500 text-sm mt-1">{{ $message }}</div>
+        @enderror
+    </div>
+
+
+
+
     <label for="creator" class="block text-gray-700 font-medium mb-1">Post Creator</label>
      <select name="post_creator" class="form-control">
             @foreach($creators as $creator)
@@ -55,4 +73,4 @@
     &copy;2020 Acme Corp. All rights reserved.
   </p>
 </div>
-@endsection
+</x-app-layout>

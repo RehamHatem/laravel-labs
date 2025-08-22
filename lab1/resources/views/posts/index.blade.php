@@ -1,8 +1,5 @@
-@extends('layouts.app')
+<x-app-layout>
 
-@section('title', 'Posts')
-
-@section('content')
 <div class="container mx-auto mt-2">
     @if (session('success'))
         <div class="mb-4 px-4 py-2 rounded-lg bg-green-100 text-green-800 border border-green-300">
@@ -25,6 +22,7 @@
                     <th class="py-3 px-4 border">Title</th>
                     <th class="py-3 px-4 border">Posted By</th>
                     <th class="py-3 px-4 border">Created At</th>
+                    <th class="py-3 px-4 border">Image</th>
                     <th class="py-3 px-4 border">Actions</th>
                 </tr>
             </thead>
@@ -38,6 +36,16 @@
                         <td class="py-2 px-4 border">
                             {{ $post->created_at }}
                         </td>
+                         
+                         <td class="py-2 px-4 border text-center">
+                           @if($post->image)
+                      <img src="{{ asset($post->image) }}" alt="{{ $post->original_filename }}" class="w-32 h-32 object-fill rounded mb-2">
+                     <p class="mt-1 text-sm text-gray-600">{{ $post->original_filename }}</p>
+                    @else
+                       <span class="text-gray-500">No Image</span>
+                      @endif
+                         </td>
+                         
                         <td class="py-2 px-4 border text-center space-x-2">
                             <a href="{{ route('posts.show', $post) }}"
                                class="bg-blue-500 hover:bg-blue-600 text-white py-1 px-3 rounded text-sm">
@@ -57,6 +65,7 @@
                                 </button>
                             </form>
                         </td>
+                        
                     </tr>
                 @endforeach
             </tbody>
@@ -66,4 +75,4 @@
     {{ $posts->links() }}
 
 </div>
-@endsection
+</x-app-layout>
